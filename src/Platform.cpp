@@ -132,11 +132,19 @@ namespace hscpp { namespace platform
 
     static std::vector<std::string> GetDefaultCompileOptions_gcc(int cppStandard)
     {
+        static const std::string osxSysRoot(HSCPP_OSX_SYSROOT);
         return {
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "-shared", // Compile a shared library.
             "-fPIC", // Use position-independent code.
             "-fvisibility=hidden", // Hide code not explicitly made visible.
+#if defined(HSCPP_PLATFORM_APPLE)
+            //MACOS
+            "-framework Cocoa",
+            "-framework IOKit",
+            "-framework CoreFoundation",
+            "-isysroot " + osxSysRoot,
+#endif
 
 #if defined(HSCPP_DEBUG)
             "-g", // Add debug info.

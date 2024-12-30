@@ -83,13 +83,8 @@ int main(int, char**)
     auto exampleUtilsIncludePath = hscpp::util::GetHscppExamplesPath() / "hscpp-example-utils" / "include";
     auto imguiIncludePath = DEMO_CODE_PATH / "lib" / "imgui";
 
-#ifdef _WIN32
-    auto imguiLibraryName = "imgui.lib";
-    auto exampleUtilsLibraryName =  "hscpp-example-utils.lib";
-#else
-    auto imguiLibraryName = "imgui.a";
-    auto exampleUtilsLibraryName =  "hscpp-example-utils.a";
-#endif
+    auto imguiLibraryName = hscpp::util::GetHscppStaticLib("imgui");
+    auto exampleUtilsLibraryName =  hscpp::util::GetHscppStaticLib("hscpp-example-utils");
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);

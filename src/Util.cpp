@@ -178,4 +178,18 @@ namespace hscpp { namespace util
         return fs::path();
     }
 
+    std::string GetHscppSharedLib(const std::string& str)
+    {
+        static std::string prefix(HSCPP_SHARED_LIBRARY_PREFIX);
+        static std::string suffix(HSCPP_SHARED_LIBRARY_SUFFIX);
+        return prefix + str + suffix;
+    }
+
+    std::string GetHscppStaticLib(const std::string& str)
+    {
+        static std::string prefix(HSCPP_STATIC_LIBRARY_PREFIX);
+        static std::string suffix(HSCPP_STATIC_LIBRARY_SUFFIX);
+        return prefix + str + suffix;
+    }
+
 }}

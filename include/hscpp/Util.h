@@ -26,6 +26,8 @@ namespace hscpp { namespace util
     fs::path GetHscppBuildPath();
     fs::path GetHscppBuildExamplesPath();
     fs::path GetHscppBuildTestPath();
+    std::string GetHscppSharedLib(const std::string& str);
+    std::string GetHscppStaticLib(const std::string& str);
 
     fs::path FindFile(const fs::path& rootPath, const fs::path& name);
 
