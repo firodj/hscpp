@@ -140,9 +140,9 @@ namespace hscpp { namespace platform
             "-fvisibility=hidden", // Hide code not explicitly made visible.
 #if defined(HSCPP_PLATFORM_APPLE)
             //MACOS
-            "-framework Cocoa",
-            "-framework IOKit",
-            "-framework CoreFoundation",
+            //"-framework Cocoa",
+            //"-framework IOKit",
+            //"-framework CoreFoundation",
             "-isysroot " + osxSysRoot,
 #endif
 
@@ -302,15 +302,8 @@ namespace hscpp { namespace platform
 
     std::string GetSharedLibraryExtension()
     {
-#if defined(HSCPP_PLATFORM_WIN32)
-        return "dll";
-#elif defined(HSCPP_PLATFORM_APPLE)
-        return "dynlib";
-#elif defined(HSCPP_PLATFORM_UNIX)
-        return "so";
-#else
-        static_assert(false, "Unsupported platform.");
-#endif
+        return HSCPP_SHARED_LIBRARY_SUFFIX;
+        //static_assert(false, "Unsupported platform.");
     }
 
 
