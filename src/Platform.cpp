@@ -134,6 +134,7 @@ namespace hscpp { namespace platform
     {
         static const std::string osxSysRoot(HSCPP_OSX_SYSROOT);
         return {
+            "-v",
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "-shared", // Compile a shared library.
             "-fPIC", // Use position-independent code.
