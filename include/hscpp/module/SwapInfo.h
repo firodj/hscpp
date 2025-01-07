@@ -71,7 +71,7 @@ namespace hscpp
                     SerializeMove(name, std::move(val));
                     break;
                 case SwapPhase::AfterSwap:
-                    Unserialize(name, val);
+                    UnserializeMove(name, val);
                     break;
                 default:
                     assert(false);
@@ -111,5 +111,3 @@ namespace hscpp
     };
 
 }
-
-
