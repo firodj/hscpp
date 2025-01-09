@@ -3,6 +3,8 @@
 #include "hscpp/preprocessor/DependencyGraph.h"
 #include "hscpp/Util.h"
 
+#include <iostream>
+
 namespace hscpp
 {
 
@@ -30,7 +32,7 @@ namespace hscpp
         std::unordered_set<int> collectedHandles;
         collectedHandles.insert(collectedDependentHandles.begin(), collectedDependentHandles.end());
         collectedHandles.insert(collectedDependencyHandles.begin(), collectedDependencyHandles.end());
-        
+
         std::vector<fs::path> resolvedFilePaths;
         for (const auto& collectedHandle : collectedHandles)
         {
@@ -40,7 +42,7 @@ namespace hscpp
                 resolvedFilePaths.push_back(collectedFilePath);
             }
         }
-            
+
         return resolvedFilePaths;
     }
 
@@ -306,5 +308,48 @@ namespace hscpp
 
         return handleSet;
     }
+
+    void DependencyGraph::Dump(void)
+    {
+        for (const auto & it : m_HandlesByModule ) {
+            std::cerr << "m_HandlesByModule[" << it.first << "] =";
+            for ( auto it2 : it.second )
+                std::cerr << " " << it2;
+            std::cerr << std::endl;
+        }
+
+        for (const auto & it : m_ModulesByHandle ) {
+            std::cerr << "m_ModulesByHandle[" << it.first << "] =";
+            for ( auto it2 : it.second )
+                std::cerr << " " << it2;
+            std::cerr << std::endl;
+        }
+
+        for (const auto &  it : m_FilePathByHandle ) {
+            std::cerr << "m_FilePathByHandle[" << it.first << "] =";
+            for ( auto it2 : it.second )
+                std::cerr << " " << it2;
+            std::cerr << std::endl;
+        }
+
+        for (const auto & it : m_NodeByHandle ) {
+            std::cerr << "m_NodeByHandle[" << it.first << "] =";
+            std::cerr << " dependencyHandles {";
+            for ( auto it2 : it.second->dependencyHandles )
+                std::cerr << " " << it2;
+            std::cerr << " } dependentHandles {";
+            for ( auto it2 : it.second->dependentHandles )
+                std::cerr << " " << it2;
+            std::cerr << " }" << std::endl;
+        }
+
+        for (const auto & it : m_HandleByFilePath ) {
+            std::cerr << "m_HandleByFilePath[" << it.first << "] =";
+            std::cerr << " " << it.second;
+            std::cerr << std::endl;
+
+        }
+    }
+
 
 }

@@ -211,6 +211,31 @@ namespace hscpp
         return true;
     }
 
+    bool Preprocessor::FormCanonical(const fs::path& sourceFilePath, const std::string& value, fs::path & canonicalPath)
+    {
+        // If path is relative, it should be relative to the path of the source file.
+        fs::path path = fs::u8path(value);
+
+        fs::path fullPath;
+        if (path.is_relative())
+        {
+            fullPath = sourceFilePath.parent_path() / path;
+        }
+        else
+        {
+            fullPath = path;
+        }
+
+        std::error_code error;
+        canonicalPath = fs::canonical(fullPath, error);
+        if (error.value() != HSCPP_ERROR_SUCCESS) {
+            canonicalPath = fullPath;
+            return false;
+        }
+
+        return true;
+    }
+
     bool Preprocessor::AddHscppRequire(const fs::path& sourceFilePath, const HscppRequire& hscppRequire)
     {
         for (const auto& value : hscppRequire.values)
@@ -222,25 +247,10 @@ namespace hscpp
                 case HscppRequire::Type::Library:
                 case HscppRequire::Type::LibraryDir:
                 {
-                    // If path is relative, it should be relative to the path of the source file.
-                    fs::path path = fs::u8path(value);
-
-                    fs::path fullPath;
-                    if (path.is_relative())
+                    fs::path canonicalPath;
+                    if (!FormCanonical(sourceFilePath, value, canonicalPath))
                     {
-                        fullPath = sourceFilePath.parent_path() / path;
-                    }
-                    else
-                    {
-                        fullPath = path;
-                    }
-
-                    std::error_code error;
-                    fs::path canonicalPath = fs::canonical(fullPath, error);
-
-                    if (error.value() != HSCPP_ERROR_SUCCESS)
-                    {
-                        log::Error() << HSCPP_LOG_PREFIX << "Unable to get canonical path of " << fullPath
+                        log::Error() << HSCPP_LOG_PREFIX << "Unable to get canonical path of " << canonicalPath
                             << " within " << hscppRequire.name << ". (Line: " << hscppRequire.line << ")" << log::End();
                         return false;
                     }

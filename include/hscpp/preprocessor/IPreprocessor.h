@@ -32,6 +32,7 @@ namespace hscpp
         virtual void UpdateDependencyGraph(const std::vector<fs::path>& canonicalModifiedFiles,
                 const std::vector<fs::path>& canonicalRemovedFiles,
                 const std::vector<fs::path>& includeDirectories) = 0;
+        virtual void Dump() = 0;
     };
 
 }
