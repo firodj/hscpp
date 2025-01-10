@@ -626,7 +626,6 @@ namespace hscpp
         {
             m_pPreprocessor->UpdateDependencyGraph(canonicalModifiedFilePaths, canonicalRemovedFilePaths,
                     AsVector(m_IncludeDirectoryPathsByHandle));
-            m_pPreprocessor->Dump();
         }
     }
 

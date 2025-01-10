@@ -7,6 +7,8 @@
 #include "hscpp/preprocessor/Ast.h"
 #include "hscpp/Log.h"
 
+#include <iostream>
+
 namespace hscpp
 {
 
@@ -75,27 +77,49 @@ namespace hscpp
         for (const auto& filePath : canonicalModifiedFilePaths)
         {
             Interpreter::Result result;
+            //std::cerr << "Preprocessor->Processing: " << filePath << std::endl;
             if (Process(filePath, result))
             {
                 std::vector<fs::path> canonicalIncludePaths;
+                std::vector<fs::path> wholeIncludeDirectoryPaths{ filePath.parent_path() };
+                wholeIncludeDirectoryPaths.insert(wholeIncludeDirectoryPaths.end(), includeDirectoryPaths.begin(), includeDirectoryPaths.end());
+
+                for (const auto& hscppRequire : result.hscppRequires)
+                {
+                    for (const auto& value : hscppRequire.values)
+                    {
+                        if (hscppRequire.type == HscppRequire::Type::IncludeDir)
+                        {
+                            fs::path canonicalPath;
+                            if (FormCanonical(filePath, value, canonicalPath)) {
+                                wholeIncludeDirectoryPaths.push_back(canonicalPath);
+                            }
+                        }
+                    }
+                }
 
                 for (const auto& include : result.includePaths)
                 {
                     fs::path includePath = fs::u8path(include);
-                    for (const auto& includeDirectoryPath : includeDirectoryPaths)
+                    //std::cerr << "\thas Include:" << includePath << std::endl;
+                    for (const auto& includeDirectoryPath : wholeIncludeDirectoryPaths)
                     {
                         // For example, the includePath may be "MathUtil.h", but we want to find the
                         // full path for creating the dependency graph. Iterate through our include
                         // directories to find the folder that contains a matching include.
                         fs::path fullIncludePath = includeDirectoryPath / includePath;
+                        //std::cerr << "\t\tcheck Include:" << fullIncludePath << std::endl;
                         if (fs::exists(fullIncludePath))
                         {
                             std::error_code error;
                             fullIncludePath = fs::canonical(fullIncludePath, error);
+                            //std::cerr << "\t\t\tInclude found:" << fullIncludePath << std::endl;
                             if (error.value() == HSCPP_ERROR_SUCCESS)
                             {
                                 canonicalIncludePaths.push_back(fullIncludePath);
+                                break;
                             }
+                                //std::cerr << "\t\t\tError:" << error << std::endl;
                         }
                     }
                 }
