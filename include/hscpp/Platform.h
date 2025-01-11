@@ -48,6 +48,7 @@ typedef int TOsError;
         std::vector<std::string> GetDefaultCompileOptions(int cppStandard = HSCPP_CXX_STANDARD);
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
         fs::path GetDefaultCompilerExecutable();
+        fs::path GetDefaultNinjaExecutable();
 
         void WriteDebugString(const std::string& str);
         std::string CreateGuid();

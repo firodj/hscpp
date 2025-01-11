@@ -25,6 +25,7 @@ namespace hscpp
     {
         // Has to be in .cpp file to avoid circular dependency with Platform.h.
         executable = platform::GetDefaultCompilerExecutable();
+        ninjaExecutable = platform::GetDefaultNinjaExecutable();
     }
 
 }

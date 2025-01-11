@@ -4,6 +4,9 @@
 #include "hscpp/Platform.h"
 #include "hscpp/Log.h"
 
+#include <iostream>
+#include "hscpp/Util.h"
+
 namespace hscpp
 {
 
@@ -65,6 +68,8 @@ namespace hscpp
             return false;
         }
 
+        if (m_pConfig->ninja) return StartBuildNinja(input);
+
         fs::path commandFilePath = input.buildDirectoryPath / COMMAND_FILENAME;
         fs::path moduleFilePath = input.buildDirectoryPath / MODULE_FILENAME;
         if (!m_pCompilerCmdLine->GenerateCommandFile(commandFilePath, moduleFilePath, input))
@@ -81,6 +86,29 @@ namespace hscpp
         std::string cmd = "\"" + m_pConfig->executable.u8string() + "\" @\"" + input.buildDirectoryPath.u8string()
                 + "/" + COMMAND_FILENAME + "\"";
 
+        m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));
+
+        return true;
+    }
+
+    bool Compiler::StartBuildNinja(const Input& input)
+    {
+        std::string guid = platform::CreateGuid();
+        fs::path commandFilePath = input.buildDirectoryPath / "build.ninja";
+        fs::path moduleFilePath = input.buildDirectoryPath / (guid + MODULE_FILENAME);
+
+        if (!m_pCompilerCmdLine->GenerateNinjaBuildFile(commandFilePath, moduleFilePath, input))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to generate command file." << log::End();
+            return false;
+        }
+
+        // Execute compile command.
+        m_iCompileOutput = 0;
+        m_CompiledModulePath.clear();
+        m_CompilingModulePath = moduleFilePath;
+
+        std::string cmd = "\"" + m_pConfig->ninjaExecutable.u8string() + "\" -C \"" + input.buildDirectoryPath.u8string() + "\"";
         m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;

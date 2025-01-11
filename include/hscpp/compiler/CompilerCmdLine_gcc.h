@@ -14,6 +14,9 @@ namespace hscpp
         bool GenerateCommandFile(const fs::path& commandFilePath,
                                  const fs::path& moduleFilePath,
                                  const ICompiler::Input& input) override;
+        bool GenerateNinjaBuildFile(const fs::path &commandFilePath,
+                                 const fs::path& moduleFilePath,
+                                 const ICompiler::Input &input) override;
 
     private:
         CompilerConfig* m_pConfig = nullptr;

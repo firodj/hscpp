@@ -23,6 +23,9 @@ namespace hscpp
 
         std::string versionCmd = "\"" + m_pConfig->executable.u8string() + "\" --version";
         m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
+
+        log::Info() << HSCPP_LOG_PREFIX << "Ninja executable is " << m_pConfig->ninjaExecutable << log::End();
+
     }
 
     void CompilerInitializeTask_gcc::Update()

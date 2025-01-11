@@ -12,5 +12,9 @@ namespace hscpp
         virtual bool GenerateCommandFile(const fs::path& commandFilePath,
                                          const fs::path& moduleFilePath,
                                          const ICompiler::Input& input) = 0;
+
+        virtual bool GenerateNinjaBuildFile(const fs::path &commandFilePath,
+                                            const fs::path& moduleFilePath,
+                                            const ICompiler::Input &input) = 0;
     };
 }

@@ -204,6 +204,16 @@ namespace hscpp { namespace platform
         return fs::path(HSCPP_COMPILER_PATH);
     }
 
+    fs::path GetDefaultNinjaExecutable()
+    {
+        auto ninjaPath = fs::path(HSCPP_MAKE_PATH);
+        if (ninjaPath.stem().u8string().find("ninja") != std::string::npos) {
+            return ninjaPath;
+        }
+
+        return fs::path();
+    }
+
     //============================================================================
     // Utilities
     //============================================================================

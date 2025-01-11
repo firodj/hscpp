@@ -47,6 +47,7 @@ namespace hscpp
 
         void HandleTaskComplete(CompilerTask task);
         void HandleBuildTaskComplete();
+        bool StartBuildNinja(const Input& input);
     };
 
 }

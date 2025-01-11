@@ -17,6 +17,10 @@ namespace hscpp
         std::chrono::milliseconds initializeTimeout = std::chrono::milliseconds(60000);
 
         fs::path executable;
+
+        std::string projPath;
+        bool ninja;
+        fs::path ninjaExecutable;
     };
 
     struct FileWatcherConfig

@@ -605,15 +605,19 @@ namespace hscpp
             }
         }
 
-        std::string guid = platform::CreateGuid();
-        m_BuildDirectoryPath = m_HscppTempDirectoryPath / guid;
-
-        std::error_code error;
-        if (!fs::create_directory(m_BuildDirectoryPath, error))
+        if (m_BuildDirectoryPath.empty())
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
-                << m_BuildDirectoryPath << ". " << log::OsError(error) << log::End();
-            return false;
+            std::string guid = platform::CreateGuid();
+            m_BuildDirectoryPath = m_HscppTempDirectoryPath / guid;
+
+            std::error_code error;
+            if (!fs::create_directory(m_BuildDirectoryPath, error))
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
+                    << m_BuildDirectoryPath << ". " << log::OsError(error) << log::End();
+                m_BuildDirectoryPath.clear();
+                return false;
+            }
         }
 
         return true;
