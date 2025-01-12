@@ -20,6 +20,7 @@ namespace hscpp
         enum class CompilerTask
         {
             GetVersion,
+            GetNinjaVersion,
         };
 
         CompilerConfig* m_pConfig = nullptr;
@@ -32,7 +33,10 @@ namespace hscpp
         void TriggerDoneCb(Result result);
 
         void HandleTaskComplete(CompilerTask task);
-        void HandleGetVersionTaskComplete(const std::vector<std::string>& output);
+        bool HandleGetVersionTaskComplete(const std::vector<std::string>& output);
+        bool HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
+        bool IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner);
+        bool StartNinja();
     };
 
 }

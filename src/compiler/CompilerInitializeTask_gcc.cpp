@@ -23,9 +23,19 @@ namespace hscpp
 
         std::string versionCmd = "\"" + m_pConfig->executable.u8string() + "\" --version";
         m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
+    }
 
-        log::Info() << HSCPP_LOG_PREFIX << "Ninja executable is " << m_pConfig->ninjaExecutable << log::End();
+    bool CompilerInitializeTask_gcc::StartNinja()
+    {
+        if (m_pConfig->ninjaExecutable.empty()) return false;
 
+        m_StartTime = std::chrono::steady_clock::now();
+        m_pCmdShell->Clear();
+
+        std::string versionCmd = "\"" + m_pConfig->ninjaExecutable.u8string() + "\" --version";
+        m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetNinjaVersion));
+
+        return true;
     }
 
     void CompilerInitializeTask_gcc::Update()
@@ -83,24 +93,34 @@ namespace hscpp
         switch (task)
         {
             case CompilerTask::GetVersion:
-                return HandleGetVersionTaskComplete(output);
+                if (HandleGetVersionTaskComplete(output))
+                {
+                    if (! StartNinja())
+                    {
+                        TriggerDoneCb(Result::Success);
+                    }
+                }
+                else
+                {
+                    TriggerDoneCb(Result::Failure);
+                }
+                break;
+            case CompilerTask::GetNinjaVersion:
+                if (HandleGetNinjaVersionTaskComplete(output))
+                {
+                    // Ninja check if optional.
+                }
+                TriggerDoneCb(Result::Success);
+                break;
+
             default:
                 assert(false);
                 break;
         }
     }
 
-    void CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(const std::vector<std::string>& output)
+    bool CompilerInitializeTask_gcc::IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner)
     {
-        if (output.empty())
-        {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                << m_pConfig->executable.u8string() << log::End("'.");
-
-            TriggerDoneCb(Result::Failure);
-            return;
-        }
-
         // Very rudimentary verification; assume that a --version string will have at least
         // a letter, a number, and a period associated with it.
         bool bSawLetter = false;
@@ -126,7 +146,7 @@ namespace hscpp
                     bSawPeriod = true;
                 }
 
-                if (bSawLetter && bSawNumber && bSawPeriod)
+                if (bSawNumber && bSawPeriod && (!hasBanner || bSawLetter))
                 {
                     bValidVersion = true;
                     break;
@@ -134,13 +154,25 @@ namespace hscpp
             }
         }
 
-        if (!bValidVersion)
+        return bValidVersion;
+    }
+
+    bool CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(const std::vector<std::string>& output)
+    {
+        if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
                 << m_pConfig->executable.u8string() << log::End("'.");
 
-            TriggerDoneCb(Result::Failure);
-            return;
+            return false;
+        }
+
+        if (!IsOutputHasValidVersion(output, true))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
+                << m_pConfig->executable.u8string() << log::End("'.");
+
+            return false;
         }
 
         // Since --version verification is not very robust, print out the discovered compiler.
@@ -152,7 +184,36 @@ namespace hscpp
         }
         log::Info() << log::End();
 
-        TriggerDoneCb(Result::Success);
+        return true;
+    }
+
+    bool CompilerInitializeTask_gcc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
+    {
+        if (output.empty())
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
+                << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
+
+            return false;
+        }
+
+        if (!IsOutputHasValidVersion(output, false))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
+                << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
+
+            return false;
+        }
+
+        log::Info() << log::End(); // newline
+        log::Info() << HSCPP_LOG_PREFIX << "Found ninja version:" << log::End();
+        for (const auto& line : output)
+        {
+            log::Info() << "    " << line << log::End();
+        }
+        log::Info() << log::End();
+
+        return true;
     }
 
 }
