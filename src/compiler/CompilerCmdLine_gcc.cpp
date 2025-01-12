@@ -99,6 +99,7 @@ namespace hscpp
 
         command << "cflags =";
         for (const auto& option : input.compileOptions) {
+            if (option == "-shared") continue;
             command << " " << option;
         }
         for (const auto& preprocessorDefinition : input.preprocessorDefinitions) {
@@ -135,9 +136,13 @@ namespace hscpp
         command << std::endl;
 
         command << "rule cc" << std::endl;
+#if 1
         command << "  depfile = $out.d" << std::endl;
         command << "  deps = gcc" << std::endl;
         command << "  command = " << m_pConfig->executable.u8string() << " $cflags -MD -MT $out -MF $out.d -o $out -c $in" << std::endl;
+#else
+        command << "  command = " << m_pConfig->executable.u8string() << " $cflags -o $out -c $in" << std::endl;
+#endif
 
         command << "rule ld" << std::endl;
         command << "  command = " << m_pConfig->executable.u8string() << " $lflags -o $out $in" << std::endl;
