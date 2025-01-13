@@ -20,6 +20,19 @@ namespace hscpp
         StartVsPathTask();
     }
 
+    bool CompilerInitializeTask_msvc::StartNinja()
+    {
+        if (m_pConfig->ninjaExecutable.empty()) return false;
+
+        m_StartTime = std::chrono::steady_clock::now();
+        m_pCmdShell->Clear();
+
+        std::string versionCmd = "\"" + m_pConfig->ninjaExecutable.u8string() + "\" --version";
+        m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetNinjaVersion));
+
+        return true;
+    }
+
     void CompilerInitializeTask_msvc::Update()
     {
         int taskId = 0;
@@ -116,7 +129,7 @@ namespace hscpp
             // VS2015 stores installation path in registry key.
             HKEY registryKey;
             std::string registryName = "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7";
-            
+
             LSTATUS result = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
                 registryName.c_str(), 0, KEY_READ | KEY_WOW64_32KEY, &registryKey);
 
@@ -129,7 +142,7 @@ namespace hscpp
 
             char vsPath[MAX_PATH];
             DWORD size = sizeof(vsPath);
-            
+
             result = RegQueryValueEx(registryKey, "14.0", nullptr, nullptr, reinterpret_cast<LPBYTE>(vsPath), &size);
             if (result != HSCPP_ERROR_SUCCESS)
             {
@@ -196,7 +209,19 @@ namespace hscpp
                 HandleGetVsPathTaskComplete(output);
                 break;
             case CompilerTask::SetVcVarsAll:
-                HandleSetVcVarsAllTaskComplete(output);
+                if (HandleSetVcVarsAllTaskComplete(output))
+                {
+                    if (StartNinja())
+                        ;   // Nothing, Ninja check if optional.
+                    TriggerDoneCb(Result::Success);
+                } else {
+                    TriggerDoneCb(Result::Failure);
+                }
+                break;
+            case CompilerTask::GetNinjaVersion:
+                if (HandleGetNinjaVersionTaskComplete(output))
+                    ;   // Nothing, Ninja check if optional.
+                TriggerDoneCb(Result::Success);
                 break;
             default:
                 assert(false);
@@ -244,15 +269,15 @@ namespace hscpp
         }
     }
 
-    void CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
+    bool CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
             std::vector<std::string> output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << log::End();
 
-            TriggerDoneCb(Result::Failure);
-            return;
+
+            return false;
         }
 
         for (auto rIt = output.rbegin(); rIt != output.rend(); ++rIt)
@@ -260,13 +285,41 @@ namespace hscpp
             if (rIt->find("[vcvarsall.bat] Environment initialized") != std::string::npos)
             {
                 // Environmental variables set, we can now use 'cl' to compile.
-                TriggerDoneCb(Result::Success);
-                return;
+                return true;
             }
         }
 
         log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment with vcvarsall.bat." << log::End();
-        TriggerDoneCb(Result::Failure);
+        return false;
+    }
+
+    bool CompilerInitializeTask_msvc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
+    {
+        if (output.empty())
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
+                << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
+
+            return false;
+        }
+
+        if (!IsOutputHasValidVersion(output, false))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
+                << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
+
+            return false;
+        }
+
+        log::Info() << log::End(); // newline
+        log::Info() << HSCPP_LOG_PREFIX << "Found ninja version:" << log::End();
+        for (const auto& line : output)
+        {
+            log::Info() << "    " << line << log::End();
+        }
+        log::Info() << log::End();
+
+        return true;
     }
 
 }
