@@ -9,6 +9,8 @@ namespace hscpp
     class CompilerInitializeTask_msvc : public ICmdShellTask
     {
     public:
+        explicit CompilerInitializeTask_msvc(CompilerConfig* pConfig);
+
         void Start(ICmdShell* pCmdShell,
                    std::chrono::milliseconds timeout,
                    const std::function<void(Result)>& doneCb) override;
@@ -19,8 +21,10 @@ namespace hscpp
         {
             GetVsPath,
             SetVcVarsAll,
+            GetNinjaVersion,
         };
 
+        CompilerConfig* m_pConfig = nullptr;
         ICmdShell* m_pCmdShell = nullptr;
         std::function<void(Result)> m_DoneCb;
 
@@ -33,8 +37,11 @@ namespace hscpp
 		bool StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath);
 
         void HandleTaskComplete(CompilerTask task);
-        void HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
-        void HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
+        bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        bool HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
+        bool StartNinja();
+        bool IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner);
     };
 
 }

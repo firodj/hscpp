@@ -54,7 +54,7 @@ namespace hscpp { namespace platform
         std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine;
 
 #if defined(HSCPP_COMPILER_MSVC)
-        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc(pConfig));
         pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
 #elif defined(HSCPP_COMPILER_CLANG_CL)
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));

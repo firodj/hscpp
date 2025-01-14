@@ -7,6 +7,12 @@
 namespace hscpp
 {
 
+    CompilerInitializeTask_msvc::CompilerInitializeTask_msvc(CompilerConfig* pConfig)
+        : m_pConfig(pConfig)
+    {
+    }
+
+
     void CompilerInitializeTask_msvc::Start(ICmdShell* pCmdShell,
                                             std::chrono::milliseconds timeout,
                                             const std::function<void(Result)>& doneCb)
@@ -206,7 +212,9 @@ namespace hscpp
         switch (task)
         {
             case CompilerTask::GetVsPath:
-                HandleGetVsPathTaskComplete(output);
+                if (!HandleGetVsPathTaskComplete(output)) {
+                    TriggerDoneCb(Result::Failure);                    
+                }
                 break;
             case CompilerTask::SetVcVarsAll:
                 if (HandleSetVcVarsAllTaskComplete(output))
@@ -229,15 +237,14 @@ namespace hscpp
         }
     }
 
-    void CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
+    bool CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
             const std::vector<std::string> &output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << log::End();
 
-            TriggerDoneCb(Result::Failure);
-            return;
+            return false;
         }
 
         // Find first non-empty line. Results should be sorted by newest VS version first.
@@ -256,17 +263,17 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX
                 << "vswhere.exe failed to find Visual Studio installation path." << log::End();
 
-            TriggerDoneCb(Result::Failure);
-            return;
+            return false;
         }
 
         if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 
-            TriggerDoneCb(Result::Failure);
-            return;
+            return false;
         }
+
+        return true;
     }
 
     bool CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
@@ -291,6 +298,44 @@ namespace hscpp
 
         log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment with vcvarsall.bat." << log::End();
         return false;
+    }
+
+    bool CompilerInitializeTask_msvc::IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner)
+    {
+        // Very rudimentary verification; assume that a --version string will have at least
+        // a letter, a number, and a period associated with it.
+        bool bSawLetter = false;
+        bool bSawNumber = false;
+        bool bSawPeriod = false;
+        bool bValidVersion = false;
+        for (const auto& line : output)
+        {
+            for (const char c : line)
+            {
+                if (std::isdigit(c))
+                {
+                    bSawNumber = true;
+                }
+
+                if (std::isalpha(c))
+                {
+                    bSawLetter = true;
+                }
+
+                if (c == '.')
+                {
+                    bSawPeriod = true;
+                }
+
+                if (bSawNumber && bSawPeriod && (!hasBanner || bSawLetter))
+                {
+                    bValidVersion = true;
+                    break;
+                }
+            }
+        }
+
+        return bValidVersion;
     }
 
     bool CompilerInitializeTask_msvc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
