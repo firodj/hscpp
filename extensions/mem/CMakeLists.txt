@@ -1,4 +1,4 @@
-add_library(hscpp-mem
+add_library(hscpp-mem STATIC
     src/MemoryManager.cpp
 
     include/hscpp/mem/IMemoryManager.h

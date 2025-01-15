@@ -241,7 +241,7 @@ else()
     list(APPEND HSCPP_SRC_FILES src/Hotswapper_enabled.cpp)
 endif()
 
-add_library(hscpp ${HSCPP_SRC_FILES})
+add_library(hscpp STATIC ${HSCPP_SRC_FILES})
 
 target_include_directories(hscpp PUBLIC include)
 target_compile_options(hscpp PUBLIC ${HSCPP_COMPILE_OPTIONS})
