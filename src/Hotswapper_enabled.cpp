@@ -586,7 +586,7 @@ namespace hscpp
         if (!fs::create_directory(hscppTemp, error))
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
-                << hscppTemp << ". " << log::OsError(error) << log::End();
+                << hscppTemp.u8string() << ". " << log::OsError(error) << log::End();
             return false;
         }
 
@@ -614,7 +614,7 @@ namespace hscpp
             if (!fs::create_directory(m_BuildDirectoryPath, error))
             {
                 log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
-                    << m_BuildDirectoryPath << ". " << log::OsError(error) << log::End();
+                    << m_BuildDirectoryPath.u8string() << ". " << log::OsError(error) << log::End();
                 m_BuildDirectoryPath.clear();
                 return false;
             }

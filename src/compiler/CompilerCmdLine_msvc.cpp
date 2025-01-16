@@ -107,53 +107,57 @@ namespace hscpp
 
         command << "cflags =";
         for (const auto& option : input.compileOptions) {
-            if (option == "-shared") continue;
+            //if (option == "-shared") continue;
             command << " " << option;
         }
         for (const auto& preprocessorDefinition : input.preprocessorDefinitions) {
-            command << " -D " << "\"" << preprocessorDefinition << "\"";
+            command << " -D" << "\"" << preprocessorDefinition << "\"";
         }
         for (const auto& includeDirectory : input.includeDirectoryPaths)
         {
-            command << " -I " << "\"" << util::UnixSlashes(includeDirectory.u8string()) << "\"";
+            command << " -I" << "\"" << util::DosSlashes(includeDirectory.u8string()) << "\"";
         }
         command << std::endl;
+
         command << "lflags =";
-        for (const auto& option : input.compileOptions) {
-            command << " " << option;
-        }
+        command << " /nologo /machine:x64 /debug /INCREMENTAL /dll";
+        //for (const auto& option : input.compileOptions) {
+        //    command << " " << option;
+        //}
         for (const auto& option : input.linkOptions)
         {
             command << " " << option;
         }
         for (const auto& libraryDirectory : input.libraryDirectoryPaths)
         {
-            command << " -L " << "\"" << util::UnixSlashes(libraryDirectory.u8string()) << "\"";
+            command << " -LIBPATH:" << "\"" << util::DosSlashes(libraryDirectory.u8string()) << "\"";
         }
         for (const auto& library : input.libraryPaths)
         {
             if (library.parent_path().empty())
             {
-                command << " -l " << "\"" << library.filename().u8string() << "\"";
+                command << " \"" << library.filename().u8string() << "\"";
             }
             else
             {
-                command << " \"" << util::UnixSlashes(library.u8string()) << "\"";
+                command << " \"" << util::DosSlashes(library.u8string()) << "\"";
             }
         }
         command << std::endl;
 
         command << "rule cc" << std::endl;
 #if 1
-        command << "  depfile = $out.d" << std::endl;
-        command << "  deps = gcc" << std::endl;
-        command << "  command = " << m_pConfig->executable.u8string() << " $cflags -MD -MT $out -MF $out.d -o $out -c $in" << std::endl;
+        //command << "  depfile = $out.d" << std::endl;
+        command << "  deps = msvc" << std::endl;
+        command << "  command = " << util::DosSlashes(m_pConfig->executable.u8string()) << " $cflags /showIncludes /Fo$out /Fd$TARGET_PDB /FS -c $in" << std::endl;
 #else
         command << "  command = " << m_pConfig->executable.u8string() << " $cflags -o $out -c $in" << std::endl;
 #endif
 
+        auto linkerExecutable = m_pConfig->executable.parent_path() / "link.exe";
+
         command << "rule ld" << std::endl;
-        command << "  command = " << m_pConfig->executable.u8string() << " $lflags -o $out $in" << std::endl;
+        command << "  command = " << util::DosSlashes(linkerExecutable.u8string()) << " $lflags /out:$out /pdb:$TARGET_PDB $in" << std::endl;
         command << "  restat = 1" << std::endl;
 
         std::vector<fs::path> objFiles;
@@ -162,24 +166,32 @@ namespace hscpp
             std::filesystem::path relativePath = std::filesystem::relative(file, m_pConfig->projPath);
             relativePath.replace_extension(".o");
             auto buildOut = input.buildDirectoryPath / relativePath;
+            auto pdbOut = buildOut;
+            pdbOut.replace_extension(".pdb");
             objFiles.push_back(buildOut);
-            command << "build " << util::UnixSlashes(buildOut.u8string()) << ": ";
-            command << "cc " << util::UnixSlashes(file.u8string());
+            command << "build " << util::NinjaBuildEscape(util::DosSlashes(buildOut.u8string())) << ": ";
+            command << "cc " << util::NinjaBuildEscape(util::DosSlashes(file.u8string()));
             command << std::endl;
+            command << "  TARGET_PDB = " << util::DosSlashes(pdbOut.u8string()) << std::endl;
         }
 
-        command << "build " << util::UnixSlashes(moduleFilePath.u8string()) << ": ";
+        command << "build " << util::NinjaBuildEscape(util::DosSlashes(moduleFilePath.u8string())) << ": ";
         command << "ld";
 
         for (const auto& buildOut : objFiles)
         {
-            command << " " << util::UnixSlashes(buildOut.u8string());
+            command << " " << util::NinjaBuildEscape(util::DosSlashes(buildOut.u8string()));
         }
         command << std::endl;
 
+        auto pdbOut = moduleFilePath;
+        pdbOut.replace_extension(".pdb");
+        command << "  TARGET_PDB = " << util::DosSlashes(pdbOut.u8string()) << std::endl;
+
+
         // Print effective command line.
-        log::Build() << m_pConfig->ninjaExecutable.u8string()
-            << " -C " << commandFilePath.parent_path().u8string()
+        log::Build() << util::DosSlashes(m_pConfig->ninjaExecutable.u8string())
+            << " -C " << util::DosSlashes(commandFilePath.parent_path().u8string())
             << log::End();
 
         // Write command file.

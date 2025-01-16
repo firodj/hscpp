@@ -55,6 +55,32 @@ namespace hscpp { namespace util
         return replacedStr;
     }
 
+    std::string DosSlashes(const std::string& str)
+    {
+        std::string replacedStr = str;
+        std::replace(replacedStr.begin(), replacedStr.end(), '/', '\\');
+
+        return replacedStr;
+    }
+
+    std::string FindAndReplace(const std::string& str, const std::string& toFind, const std::string& toReplace)
+    {
+        std::string replacedStr = str;
+        size_t pos = 0;
+        // Keep finding and replacing until the substring is not found anymore
+        while ((pos = replacedStr.find(toFind, pos)) != std::string::npos) {
+            replacedStr.replace(pos, toFind.length(), toReplace);
+            pos += toReplace.length();  // Move past the last replacement to avoid infinite loop
+        }
+
+        return replacedStr;
+    }
+
+    std::string NinjaBuildEscape(const std::string& str)
+    {
+       return FindAndReplace(str, ":", "$:");
+    }
+
     bool IsHeaderFile(const fs::path& filePath)
     {
         fs::path extension = filePath.extension();

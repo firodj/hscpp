@@ -15,6 +15,9 @@ namespace hscpp { namespace util
     std::string Quote(const std::string& str);
 
     std::string UnixSlashes(const std::string& str);
+    std::string DosSlashes(const std::string& str);
+    std::string FindAndReplace(const std::string& str, const std::string& toFind, const std::string& toReplace);
+    std::string NinjaBuildEscape(const std::string& str);
 
     bool IsHeaderFile(const fs::path& filePath);
     bool IsSourceFile(const fs::path& filePath);

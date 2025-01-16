@@ -31,7 +31,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& modulePath)
     if (pModule == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-             << modulePath << ". " << log::LastOsError() << log::End();
+             << modulePath.u8string() << ". " << log::LastOsError() << log::End();
         return false;
     }
 
