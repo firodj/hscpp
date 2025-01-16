@@ -125,7 +125,7 @@ namespace hscpp
                 compilerVersion = "17.0";
                 break;
             default:
-                log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version, using default version '"
+                log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version _MSC_VER=" << _MSC_VER << ", using default version '"
                                << compilerVersion << log::End("'.");
                 break;
         }
@@ -282,7 +282,6 @@ namespace hscpp
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << log::End();
-
 
             return false;
         }

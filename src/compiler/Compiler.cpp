@@ -70,8 +70,9 @@ namespace hscpp
 
         if (m_pConfig->ninja) return StartBuildNinja(input);
 
+        std::string guid = platform::CreateGuid();
         fs::path commandFilePath = input.buildDirectoryPath / COMMAND_FILENAME;
-        fs::path moduleFilePath = input.buildDirectoryPath / MODULE_FILENAME;
+        fs::path moduleFilePath = input.buildDirectoryPath / (guid + MODULE_FILENAME);
         if (!m_pCompilerCmdLine->GenerateCommandFile(commandFilePath, moduleFilePath, input))
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to generate command file." << log::End();
