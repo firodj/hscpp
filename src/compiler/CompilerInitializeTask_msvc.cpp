@@ -221,7 +221,8 @@ namespace hscpp
                 {
                     if (StartNinja())
                         ;   // Nothing, Ninja check if optional.
-                    TriggerDoneCb(Result::Success);
+                    else
+                        TriggerDoneCb(Result::Success);
                 } else {
                     TriggerDoneCb(Result::Failure);
                 }

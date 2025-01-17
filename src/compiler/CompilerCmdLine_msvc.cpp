@@ -120,7 +120,7 @@ namespace hscpp
         command << std::endl;
 
         command << "lflags =";
-        command << " /nologo /machine:x64 /debug /INCREMENTAL /dll";
+        command << " /nologo /debug /INCREMENTAL /dll";
         //for (const auto& option : input.compileOptions) {
         //    command << " " << option;
         //}
@@ -157,7 +157,7 @@ namespace hscpp
         auto linkerExecutable = m_pConfig->executable.parent_path() / "link.exe";
 
         command << "rule ld" << std::endl;
-        command << "  command = " << util::DosSlashes(linkerExecutable.u8string()) << " $lflags /out:$out /pdb:$TARGET_PDB $in" << std::endl;
+        command << "  command = " << util::DosSlashes(linkerExecutable.u8string()) << " $lflags $in /out:$out /pdb:$TARGET_PDB $LINK_LIBRARIES" << std::endl;
         command << "  restat = 1" << std::endl;
 
         std::vector<fs::path> objFiles;
@@ -187,6 +187,7 @@ namespace hscpp
         auto pdbOut = moduleFilePath;
         pdbOut.replace_extension(".pdb");
         command << "  TARGET_PDB = " << util::DosSlashes(pdbOut.u8string()) << std::endl;
+        command << "  LINK_LIBRARIES = kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib" << std::endl;
 
 
         // Print effective command line.
