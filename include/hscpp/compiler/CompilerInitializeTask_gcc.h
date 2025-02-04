@@ -33,8 +33,8 @@ namespace hscpp
         void TriggerDoneCb(Result result);
 
         void HandleTaskComplete(CompilerTask task);
-        bool HandleGetVersionTaskComplete(const std::vector<std::string>& output);
-        bool HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
+        void HandleGetVersionTaskComplete(const std::vector<std::string>& output);
+        void HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
         bool IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner);
         bool StartNinja();
     };

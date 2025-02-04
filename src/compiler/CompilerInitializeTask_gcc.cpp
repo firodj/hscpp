@@ -93,26 +93,11 @@ namespace hscpp
         switch (task)
         {
             case CompilerTask::GetVersion:
-                if (HandleGetVersionTaskComplete(output))
-                {
-                    if (! StartNinja())
-                    {
-                        TriggerDoneCb(Result::Success);
-                    }
-                }
-                else
-                {
-                    TriggerDoneCb(Result::Failure);
-                }
+                HandleGetVersionTaskComplete(output);
                 break;
             case CompilerTask::GetNinjaVersion:
-                if (HandleGetNinjaVersionTaskComplete(output))
-                {
-                    // Ninja check if optional.
-                }
-                TriggerDoneCb(Result::Success);
+                HandleGetNinjaVersionTaskComplete(output);
                 break;
-
             default:
                 assert(false);
                 break;
@@ -157,14 +142,15 @@ namespace hscpp
         return bValidVersion;
     }
 
-    bool CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(const std::vector<std::string>& output)
+    void CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(const std::vector<std::string>& output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
                 << m_pConfig->executable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         if (!IsOutputHasValidVersion(output, true))
@@ -172,7 +158,8 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
                 << m_pConfig->executable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         // Since --version verification is not very robust, print out the discovered compiler.
@@ -184,17 +171,21 @@ namespace hscpp
         }
         log::Info() << log::End();
 
-        return true;
+        if (!StartNinja())
+        {
+            TriggerDoneCb(Result::Success); // Ninja check is optional
+        }
     }
 
-    bool CompilerInitializeTask_gcc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
+    void CompilerInitializeTask_gcc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
                 << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Success); // Ninja check is optional
+            return;
         }
 
         if (!IsOutputHasValidVersion(output, false))
@@ -202,7 +193,8 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
                 << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Success); // Ninja check is optional
+            return;
         }
 
         log::Info() << log::End(); // newline
@@ -213,7 +205,7 @@ namespace hscpp
         }
         log::Info() << log::End();
 
-        return true;
+        TriggerDoneCb(Result::Success);
     }
 
 }

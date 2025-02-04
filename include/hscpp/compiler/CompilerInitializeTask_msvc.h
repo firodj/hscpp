@@ -37,9 +37,9 @@ namespace hscpp
 		bool StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath);
 
         void HandleTaskComplete(CompilerTask task);
-        bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
-        bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
-        bool HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
+        void HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
+        void HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        void HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output);
         bool StartNinja();
         bool IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner);
     };

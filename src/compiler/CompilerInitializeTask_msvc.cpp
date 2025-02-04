@@ -212,25 +212,13 @@ namespace hscpp
         switch (task)
         {
             case CompilerTask::GetVsPath:
-                if (!HandleGetVsPathTaskComplete(output)) {
-                    TriggerDoneCb(Result::Failure);                    
-                }
+                HandleGetVsPathTaskComplete(output);
                 break;
             case CompilerTask::SetVcVarsAll:
-                if (HandleSetVcVarsAllTaskComplete(output))
-                {
-                    if (StartNinja())
-                        ;   // Nothing, Ninja check if optional.
-                    else
-                        TriggerDoneCb(Result::Success);
-                } else {
-                    TriggerDoneCb(Result::Failure);
-                }
+                HandleSetVcVarsAllTaskComplete(output);
                 break;
             case CompilerTask::GetNinjaVersion:
-                if (HandleGetNinjaVersionTaskComplete(output))
-                    ;   // Nothing, Ninja check if optional.
-                TriggerDoneCb(Result::Success);
+                HandleGetNinjaVersionTaskComplete(output);
                 break;
             default:
                 assert(false);
@@ -238,14 +226,15 @@ namespace hscpp
         }
     }
 
-    bool CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
+    void CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
             const std::vector<std::string> &output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << log::End();
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         // Find first non-empty line. Results should be sorted by newest VS version first.
@@ -264,27 +253,28 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX
                 << "vswhere.exe failed to find Visual Studio installation path." << log::End();
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
-
-        return true;
     }
 
-    bool CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
+    void CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
             std::vector<std::string> output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << log::End();
 
-            return false;
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         for (auto rIt = output.rbegin(); rIt != output.rend(); ++rIt)
@@ -292,12 +282,16 @@ namespace hscpp
             if (rIt->find("[vcvarsall.bat] Environment initialized") != std::string::npos)
             {
                 // Environmental variables set, we can now use 'cl' to compile.
-                return true;
+                if (!StartNinja()) {
+                    TriggerDoneCb(Result::Success); // Ninja check if optional.
+                }
+                return;
             }
         }
 
         log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment with vcvarsall.bat." << log::End();
-        return false;
+        TriggerDoneCb(Result::Failure);
+        return;
     }
 
     bool CompilerInitializeTask_msvc::IsOutputHasValidVersion(const std::vector<std::string>& output, bool hasBanner)
@@ -338,14 +332,15 @@ namespace hscpp
         return bValidVersion;
     }
 
-    bool CompilerInitializeTask_msvc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
+    void CompilerInitializeTask_msvc::HandleGetNinjaVersionTaskComplete(const std::vector<std::string>& output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
                 << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Success); // Ninja check if optional.
+            return;
         }
 
         if (!IsOutputHasValidVersion(output, false))
@@ -353,7 +348,8 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for ninja '"
                 << m_pConfig->ninjaExecutable.u8string() << log::End("'.");
 
-            return false;
+            TriggerDoneCb(Result::Success); // Ninja check if optional.
+            return;
         }
 
         log::Info() << log::End(); // newline
@@ -364,7 +360,7 @@ namespace hscpp
         }
         log::Info() << log::End();
 
-        return true;
+        TriggerDoneCb(Result::Success);
     }
 
 }
