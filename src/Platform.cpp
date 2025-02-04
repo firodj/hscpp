@@ -134,16 +134,11 @@ namespace hscpp { namespace platform
     {
         static const std::string osxSysRoot(HSCPP_OSX_SYSROOT);
         return {
-            //"-v", // Show verbosity
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "-shared", // Compile a shared library.
             "-fPIC", // Use position-independent code.
             "-fvisibility=hidden", // Hide code not explicitly made visible.
 #if defined(HSCPP_PLATFORM_APPLE)
-            //MACOS
-            //"-framework Cocoa",
-            //"-framework IOKit",
-            //"-framework CoreFoundation",
             "-isysroot " + osxSysRoot,
 #endif
 

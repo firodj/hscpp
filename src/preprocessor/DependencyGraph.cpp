@@ -309,49 +309,4 @@ namespace hscpp
         return handleSet;
     }
 
-    void DependencyGraph::Dump(void)
-    {
-        for (const auto & it : m_HandlesByModule ) {
-            std::cerr << "m_HandlesByModule[" << it.first << "] =";
-            for ( auto it2 : it.second )
-                std::cerr << "\t" << m_FilePathByHandle[it2].u8string() << std::endl;
-            std::cerr << std::endl;
-        }
-/*
-        for (const auto & it : m_ModulesByHandle ) {
-            std::cerr << "m_ModulesByHandle[" << it.first << "] =";
-            for ( auto it2 : it.second )
-                std::cerr << " " << it2;
-            std::cerr << std::endl;
-        }
-*/
-
-/*
-        for (const auto &  it : m_FilePathByHandle ) {
-            std::cerr << "m_FilePathByHandle[" << it.first << "] =";
-            for ( auto it2 : it.second )
-                std::cerr << " " << it2;
-            std::cerr << std::endl;
-        }
-*/
-        for (const auto & it : m_NodeByHandle ) {
-            std::cerr << "m_NodeByHandle[" << m_FilePathByHandle[it.first].u8string() << "] =";
-            std::cerr << " dependencyHandles {" << std::endl;
-            for ( auto it2 : it.second->dependencyHandles )
-                std::cerr << "\t" << m_FilePathByHandle[it2].u8string() << std::endl;;
-            std::cerr << " } dependentHandles {" << std::endl;
-            for ( auto it2 : it.second->dependentHandles )
-                std::cerr << "\t" << m_FilePathByHandle[it2].u8string() << std::endl;
-            std::cerr << " }" << std::endl;
-        }
-/*
-        for (const auto & it : m_HandleByFilePath ) {
-            std::cerr << "m_HandleByFilePath[" << it.first << "] =";
-            std::cerr << " " << it.second;
-            std::cerr << std::endl;
-        }
-*/
-    }
-
-
 }

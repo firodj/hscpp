@@ -30,7 +30,6 @@ namespace hscpp
                 const std::vector<fs::path>& includeDirectoryPaths) override;
 
         bool FormCanonical(const fs::path& sourceFilePath, const std::string& value, fs::path & canonicalPath);
-        void Dump() override { m_DependencyGraph.Dump(); }
 
     private:
         std::vector<Token> m_Tokens;

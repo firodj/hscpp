@@ -22,7 +22,6 @@ namespace hscpp
         void RemoveFile(const fs::path& filePath);
 
         void Clear();
-        void Dump();
 
     private:
         // Map integers to filepaths to avoid storing a large number of duplicated paths, and to
