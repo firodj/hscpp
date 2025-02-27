@@ -1,5 +1,8 @@
 #pragma once
 
+#ifdef __linux__ 
+#include <stdexcept>
+#endif
 #include "hscpp/mem/IMemoryManager.h"
 
 namespace hscpp { namespace mem {
