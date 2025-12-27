@@ -1,6 +1,12 @@
 # hscpp: A library to hot-reload C++ at runtime
 hotswap-cpp (hscpp) is a library that allows C++ to be reloaded at runtime. This can greatly decrease iteration time where small changes are common, such as during game scripting or UI development.
 
+## Next Improvement
+
+1. The lex may has a bugs, especially to match open-close quotes inside or outside comments, need to revisit
+2. Need to create rule for C file since it has different mangling name with C++ (default rule C++).
+3. Need PoC for fastest build behaviour for ninja or cmake. The hot swap module build rule/step could be merged into main project build file instead create different build.ninja/CMakeFiles.txt file. Make the hscpp create new target for hotswapped module.
+
 ## Demonstration Video
 
 This video discusses how hscpp works, and runs through the demos included in the [examples](./examples) folder.
