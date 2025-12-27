@@ -27,11 +27,17 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
 
 bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& modulePath)
 {
-    void* pModule = platform::LoadModule(modulePath);
+    std::string errstr;
+    void* pModule = platform::LoadModule(modulePath, errstr);
     if (pModule == nullptr)
     {
-        log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-             << modulePath.u8string() << ". " << log::LastOsError() << log::End();
+        if (errstr.empty())
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
+                << modulePath.u8string() << ". " << log::LastOsError() <<  log::End();
+        else
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
+                << modulePath.u8string() << ". " << errstr <<  log::End();
+
         return false;
     }
 

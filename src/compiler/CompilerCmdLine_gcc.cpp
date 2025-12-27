@@ -97,7 +97,7 @@ namespace hscpp
             return false;
         }
 
-        command << "cflags =";
+        command << "cppflags =";
         for (const auto& option : input.compileOptions) {
             if (option == "-shared") continue;
             command << " " << option;
@@ -139,9 +139,9 @@ namespace hscpp
 #if 1
         command << "  depfile = $out.d" << std::endl;
         command << "  deps = gcc" << std::endl;
-        command << "  command = " << m_pConfig->executable.u8string() << " $cflags -MD -MT $out -MF $out.d -o $out -c $in" << std::endl;
+        command << "  command = " << m_pConfig->executable.u8string() << " $cppflags -MD -MT $out -MF $out.d -o $out -c $in" << std::endl;
 #else
-        command << "  command = " << m_pConfig->executable.u8string() << " $cflags -o $out -c $in" << std::endl;
+        command << "  command = " << m_pConfig->executable.u8string() << " $cppflags -o $out -c $in" << std::endl;
 #endif
 
         command << "rule ld" << std::endl;
@@ -151,7 +151,11 @@ namespace hscpp
         std::vector<fs::path> objFiles;
         for (const auto& file : input.sourceFilePaths)
         {
+            bool c_mode = false;
             std::filesystem::path relativePath = std::filesystem::relative(file, m_pConfig->projPath);
+            if (relativePath.extension() == ".c") {
+                c_mode = true;
+            }
             relativePath.replace_extension(".o");
             auto buildOut = input.buildDirectoryPath / relativePath;
             objFiles.push_back(buildOut);

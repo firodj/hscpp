@@ -101,8 +101,8 @@ namespace hscpp { namespace test
         REQUIRE(pCompiler->IsCompiling());
 
         fs::path modulePath = CALL(CompileUpdateLoop, pCompiler.get());
-
-        void* pModule = platform::LoadModule(modulePath);
+        std::string errstr;
+        void* pModule = platform::LoadModule(modulePath, errstr);
         REQUIRE(pModule != nullptr);
 
         auto SetValueTo12 = platform::GetModuleFunction<void(int&)>(pModule, "SetValueTo12");

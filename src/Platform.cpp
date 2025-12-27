@@ -313,12 +313,18 @@ namespace hscpp { namespace platform
     }
 
 
-    void* LoadModule(const fs::path& modulePath)
+    void* LoadModule(const fs::path& modulePath, std::string& errstr)
     {
 #if defined(HSCPP_PLATFORM_WIN32)
         return LoadLibraryW(modulePath.wstring().c_str());
 #elif defined(HSCPP_PLATFORM_UNIX)
-        return dlopen(modulePath.string().c_str(), RTLD_NOW);
+        void *handle = dlopen(modulePath.string().c_str(), RTLD_NOW);
+        if (handle == nullptr) {
+            errstr = "dlerror(): ";
+            errstr += dlerror();
+            //log::Error() << "dlerror:" << dlerror() << log::End();
+        }
+        return handle;
 #else
         static_assert(false, "Unsupported platform.");
         return nullptr;

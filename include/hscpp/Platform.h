@@ -63,7 +63,7 @@ typedef int TOsError;
 #endif
 
         std::string GetSharedLibraryExtension();
-        void* LoadModule(const fs::path& modulePath);
+        void* LoadModule(const fs::path& modulePath, std::string &errstr);
 
         template <typename TSignature>
         std::function<TSignature> GetModuleFunction(void* pModule, const std::string& name)
