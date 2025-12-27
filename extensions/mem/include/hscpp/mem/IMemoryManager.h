@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 namespace hscpp { namespace mem {
 
     // Use an IMemoryManager to avoid circular dependency between Ref and MemoryManager.
